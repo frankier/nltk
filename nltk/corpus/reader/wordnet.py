@@ -1071,7 +1071,7 @@ class WordNetCorpusReader(CorpusReader):
               'data.adj', 'data.adv', 'data.noun', 'data.verb',
               'adj.exc', 'adv.exc', 'noun.exc', 'verb.exc', )
 
-    def __init__(self, root, omw_reader):
+    def __init__(self, root, omw_reader, use_cache=True):
         """
         Construct a new wordnet corpus reader, with the given root
         directory.
@@ -1114,6 +1114,11 @@ class WordNetCorpusReader(CorpusReader):
 
         # load the exception file data into memory
         self._load_exception_map()
+
+        self._use_cache = use_cache
+
+    def set_use_cache(self, use_cache):
+        self._use_cache = use_cache
 
 # Open Multilingual WordNet functions, contributed by
 # Nasruddin A’aidil Shari, Sim Wei Ying Geraldine, and Soe Lynn
@@ -1340,7 +1345,8 @@ class WordNetCorpusReader(CorpusReader):
         data_file_line = data_file.readline()
         synset = self._synset_from_pos_and_line(pos, data_file_line)
         assert synset._offset == offset
-        self._synset_offset_cache[pos][offset] = synset
+        if self._use_cache:
+            self._synset_offset_cache[pos][offset] = synset
         return synset
 
     @deprecated('Use public method synset_from_pos_and_offset() instead')
@@ -1636,7 +1642,8 @@ class WordNetCorpusReader(CorpusReader):
                         else:
                             # Otherwise, parse the line
                             synset = from_pos_and_line(pos_tag, line)
-                            cache[pos_tag][offset] = synset
+                            if self._use_cache:
+                                cache[pos_tag][offset] = synset
 
                         # adjective satellites are in the same file as
                         # adjectives so only yield the synset if it's actually
